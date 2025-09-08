@@ -1,0 +1,3 @@
+services:
+  simple_json_api.manager:
+    class: Drupal\simple_json_api\ApiJsonParser

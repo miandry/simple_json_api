@@ -1,0 +1,167 @@
+/simple_json_api.content.term:
+  path: '/api/v1/term/{vid}'
+  defaults:
+    _langcode: 'en'
+    _controller: '\Drupal\simple_json_api\Controller\JsonContentController::apiTerm'
+  requirements:
+    _custom_access: '\Drupal\simple_json_api\Controller\JsonContentController::apiJsonAccess'
+
+simple_json_api.insert_entity:
+  path: '/action/{entity_name}/insert/{bundle}'
+  defaults:
+    _langcode: 'en'
+    _controller: '\Drupal\simple_json_api\Controller\JsonContentController::insertAPIEntity'
+  requirements:
+     _custom_access: '\Drupal\simple_json_api\Controller\JsonContentController::apiJsonAccess'
+
+simple_json_api.uploader:
+  path: '/action/uploader'
+  defaults:
+    _langcode: 'en'
+    _controller: '\Drupal\simple_json_api\Controller\JsonContentController::uploader'
+  requirements:
+    _permission: 'access content'
+
+simple_json_api.insert_produit:
+  path: '/action/produit/insert'
+  defaults:
+    _langcode: 'en'
+    _controller: '\Drupal\simple_json_api\Controller\JsonContentController::insertAPIProduit'
+  requirements:
+    _permission: 'access content'
+
+simple_json_api.content.term:
+  path: '/api/v1/migration/product'
+  defaults:
+    _langcode: 'en'
+    _controller: '\Drupal\simple_json_api\Controller\JsonContentController::apiMigration'
+  requirements:
+    _custom_access: '\Drupal\simple_json_api\Controller\JsonContentController::apiJsonAccess'
+
+
+simple_json_api.content.payement:
+  path: '/api/payement'
+  defaults:
+    _langcode: 'en'
+    _controller: '\Drupal\simple_json_api\Controller\JsonContentController::apiPayement'
+  requirements:
+    _custom_access: '\Drupal\simple_json_api\Controller\JsonContentController::apiJsonAccess'
+
+simple_json_api.content.product_single:
+  path: '/api/v1/product/{id}'
+  defaults:
+    _langcode: 'en'
+    _controller: '\Drupal\simple_json_api\Controller\JsonContentController::apiProductSingle'
+  requirements:
+    _custom_access: '\Drupal\simple_json_api\Controller\JsonContentController::apiJsonAccess'
+
+
+simple_json_api.content.product_single_alias:
+  path: '/api/{entity_type}/full/{id}'
+  defaults:
+    _langcode: 'en'
+    _controller: '\Drupal\simple_json_api\Controller\JsonContentController::apiEntitySingle'
+  requirements:
+    _custom_access: '\Drupal\simple_json_api\Controller\JsonContentController::apiJsonAccess'
+
+#simple_json_api.content.product_list:
+#  path: '/api/product'
+#  defaults:
+#    _langcode: 'en'
+#    _controller: '\Drupal\simple_json_api\Controller\JsonContentController::apiProducts'
+#  requirements:
+#    _custom_access: '\Drupal\simple_json_api\Controller\JsonContentController::apiJsonAccess'
+
+simple_json_api.content.menuapi_json:
+  path: '/api/v1/menu'
+  defaults:
+    _langcode: 'en'
+    _controller: '\Drupal\simple_json_api\Controller\JsonContentController::apiMenu'
+  requirements:
+    _custom_access: '\Drupal\simple_json_api\Controller\JsonContentController::apiJsonAccess'
+
+simple_json_api.content.api_json:
+  path: '/api/v1/{entity_type}/{id}'
+  defaults:
+    _langcode: 'en'
+    _controller: '\Drupal\simple_json_api\Controller\JsonContentController::apiJson'
+  requirements:
+    _custom_access: '\Drupal\simple_json_api\Controller\JsonContentController::apiJsonAccess'
+
+simple_json_api.content.api_orders:
+  path: '/api/v1/orders'
+  defaults:
+    _langcode: 'en'
+    _controller: '\Drupal\simple_json_api\Controller\JsonContentController::apiOrderV1'
+  requirements:
+    _custom_access: '\Drupal\simple_json_api\Controller\JsonContentController::apiJsonAccess'
+
+simple_json_api.content.api_category:
+  path: '/api/v1/category'
+  defaults:
+    _langcode: 'en'
+    _controller: '\Drupal\simple_json_api\Controller\JsonContentController::apiCategory'
+  requirements:
+    _custom_access: '\Drupal\simple_json_api\Controller\JsonContentController::apiJsonAccess'
+
+simple_json_api.block.api_json:
+  path: '/api/v1/render'
+  defaults:
+    _langcode: 'en'
+    _controller: '\Drupal\simple_json_api\Controller\JsonContentController::apiRender'
+  requirements:
+    _custom_access: '\Drupal\simple_json_api\Controller\JsonContentController::apiJsonAccess'
+
+simple_json_api.list.api_json:
+  path: '/api/v1/list'
+  defaults:
+    _langcode: 'en'
+    _controller: '\Drupal\simple_json_api\Controller\JsonContentController::apiListJson'
+  requirements:
+    _custom_access: '\Drupal\simple_json_api\Controller\JsonContentController::apiJsonAccess'
+
+simple_json_api.login:
+  path: '/api/user/login'
+  defaults:
+    _langcode: 'en'
+    _controller: '\Drupal\simple_json_api\Controller\JsonContentController::login'
+  requirements:
+    _custom_access: '\Drupal\simple_json_api\Controller\JsonContentController::apiJsonAccess'
+
+simple_json_api.register:
+  path: '/api/user/register'
+  defaults:
+    _langcode: 'en'
+    _controller: '\Drupal\simple_json_api\Controller\JsonContentController::register'
+  requirements:
+    _custom_access: '\Drupal\simple_json_api\Controller\JsonContentController::apiJsonAccess'
+
+simple_json_api.user_edit:
+  path: '/api/user/edit'
+  defaults:
+    _langcode: 'en'
+    _controller: '\Drupal\simple_json_api\Controller\JsonContentController::userEdit'
+  requirements:
+    _custom_access: '\Drupal\simple_json_api\Controller\JsonContentController::apiJsonAccess'
+simple_json_api.send_reset_email:
+  path: '/api/user/forgot-password'
+  defaults:
+    _controller: '\Drupal\simple_json_api\Controller\JsonContentController::sendResetEmail'
+    _title: 'Forgot Password API'
+  requirements:
+    _custom_access: '\Drupal\simple_json_api\Controller\JsonContentController::apiJsonAccess'
+
+simple_json_api.content.api_json:
+  path: '/api/v2/{entitype}/{bundle}'
+  defaults:
+    _langcode: 'en'
+    _controller: '\Drupal\simple_json_api\Controller\DefaultController::apiListJsonV2'
+  requirements:
+    _custom_access: '\Drupal\simple_json_api\Controller\DefaultController::apiJsonAccess'
+simple_json_api.details.api_json:
+  path: '/api/v2/{entitype}/{bundle}/{id}'
+  defaults:
+    _langcode: 'en'
+    _controller: '\Drupal\mz_mobile_page\Controller\DefaultController::apiDetailsJsonV2'
+  requirements:
+    _custom_access: '\Drupal\mz_mobile_page\Controller\DefaultController::apiJsonAccess'
