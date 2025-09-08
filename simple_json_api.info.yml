@@ -4,5 +4,5 @@ description: 'Json API simple'
 core_version_requirement: ^8.8 || ^9
 package: 'Custom'
 dependencies:
- - server_json
+ - entity_parser
  - mz_email

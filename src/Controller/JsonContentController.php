@@ -101,137 +101,7 @@ class JsonContentController extends ControllerBase implements ContainerInjection
         }
         return new JsonResponse($json);
     }
-    public function insertAPIEntity($entity_name,$bundle){
-        $json = [];
-        $parser_node_json = \Drupal::service('product_json');
-        $method = \Drupal::request()->getMethod();
-        $id = null;
-        if ($method == "POST") {
-            $content = \Drupal::request()->getContent();
-            if (!empty($content)) {
-                $content = json_decode($content, TRUE);
-                
-               // $json  =  is_array( $content);
-                $id = $parser_node_json->insertAPIEntity($content,$entity_name,$bundle);
-            }
-        }
-        $item = \Drupal::service('entity_parser.manager')->node_parser($id);
-        $json = ($id)? ['item'=> $item,'status'=>'success']:['item'=> $id,'status'=>'error'] ;
-        return new JsonResponse($json);
-    }
 
-    public function insertAPIProduit(){
-        $parser_node_json = \Drupal::service('product_json');
-        $method = \Drupal::request()->getMethod();
-        $status = null;
-        if ($method == "POST") {
-            $content = \Drupal::request()->getContent();
-            if (!empty($content)) {
-                $produit = json_decode($content, TRUE);
-                $status = $parser_node_json->insertAPIProduit($produit);
-            }
-        }
-        $json = ($status)? ['item'=> $status,'status'=>'success']:['item'=> $status,'status'=>'error'] ;
-        return new JsonResponse($json);
-    }
-
-    function apiMigration(){
-        $parser_node_json = \Drupal::service('product_json');
-        $method = \Drupal::request()->getMethod();
-        $status = [];
-        if ($method == "POST") {
-            $content = \Drupal::request()->getContent();
-            if (!empty($content)) {
-                $prods = json_decode($content, TRUE);
-                $status = $parser_node_json->migrateProduct($prods);
-            }
-        }
-        return $status;
-    }
-    function apiEntitySingle($entity_type,$id){
-        $fields = [];
-        $field_param = \Drupal::request()->get('fields');
-        $cache = \Drupal::request()->get('c') ;
-        if($cache && $cache == 1){
-            drupal_flush_all_caches();
-        }       
-        if($field_param){
-          $fields = explode(',',$field_param);
-        }
-        $result = [];
-        $entity = \Drupal::entityTypeManager()->getStorage($entity_type)->load($id);
-        if(is_object($entity)){
-            $options['#hook_class'] = "\Drupal\simple_json_api\Custom";
-            $result = \Drupal::service('entity_parser.manager')->parser($entity,$fields,$options);
-        }
-        return new JsonResponse($result);
-
-    }
-    function apiProductSingle($id){
-        $node = \Drupal::entityTypeManager()->getStorage('node')->load($id);
-        $result = [];
-        if(is_object($node)){
-            $result = \Drupal::service('entity_parser.manager')->parser($node);
-        }
-        return new JsonResponse($result);
-    }
-    function apiProducts()
-    {
-        $query = \Drupal::entityQuery('node')
-            ->condition('type', 'produit');
-        //    ->condition('status', '1');
-        $start = \Drupal::request()->get('_start');
-        $end = \Drupal::request()->get('_end');
-        if ($start == null || $end == null) {
-            $query->range(0,10);
-        }else{
-            $query->range($start, $end);
-        }
-        $query->sort('nid', 'DESC');
-        $nids = $query->execute();
-        $results = [];
-        $i = 0;
-        $product_json = \Drupal::service('product_json');
-        foreach ($nids as $key => $id) {
-            $node = \Drupal::entityTypeManager()->getStorage('node')->load($id);
-            $results[] = $product_json->productItem($node) ;
-        }
-        return $this->responseCacheableJson($results);
-    }
-    function apiPayement(){
-        $method = \Drupal::request()->getMethod();
-        $results = [];
-        if ($method == "POST") {
-            $content = \Drupal::request()->getContent();
-            if (!empty($content)) {
-                $payement = json_decode($content, TRUE);
-                $commandes =  \Drupal::entityTypeManager()->getStorage('node')->loadByProperties(
-                    ["type"=> 'commande',"title"=>$payement['orderId']]);
-                if(!empty($commandes)){
-                 //   var_dump(array_keys($commandes);
-                    $fields['title'] = $payement['reference'];
-                    $fields['commande_one'] = array_keys($commandes)[0] ;
-                    $fields['field_montant'] = $payement['montant'] ;
-                    $fields['field_payement_methode'] = $payement['method'] ;
-                  //  $fields['field_ref'] = $payement['reference'] ;
-                    $fields['field_text'] = $payement['phone'] ;
-                    $fields['field_type_price'] = $payement['type_price'] ;
-                    $pay = \Drupal::service('crud')->save('node', 'payement', $fields);
-                    if (is_object($pay)) {
-                        $status = true;
-                        $payement['nid'] = $pay->id();
-                        $results['data'] = $payement ;
-                    } else {
-                        $status = false;
-                    }
-                    $results['status'] = $status ;
-                }
-                // 2nd param to get as array
-              //  $status = $parser_node_json->processOrder($orders);
-            }
-        }
-        return new JsonResponse($results);
-    }
     public function apiListJson()
     {
 
@@ -317,78 +187,7 @@ class JsonContentController extends ControllerBase implements ContainerInjection
         return new JsonResponse($results);
     }
 
-    public function apiOrder()
-    {
 
-        $method = \Drupal::request()->getMethod();
-        $status = [];
-        if ($method == "POST") {
-            $content = \Drupal::request()->getContent();
-            if (!empty($content)) {
-                // 2nd param to get as array
-                $orders = json_decode($content, TRUE);
-                foreach ($orders['data'] as $data) {
-                    $str = '<table border="1">';
-                    $str = $str . '<tr>';
-                    $str = $str . '<th> Type </th>';
-                    $str = $str . '<th> Details </th>';
-                    $str = $str . '<th> Image </th>';
-                    $str = $str . '</tr>';
-                    foreach ($data['attrs'] as $attr) {
-                        $str = $str . '<tr>';
-                        $str = $str . '<td>' . $attr['type'] . '</td>';
-                        $str = $str . '<td>' . $attr['label'] . '</td>';
-                        if ($attr['image']) {
-                            $str = $str . '<td> <img src="' . $attr['image'] . '" width="150" /> </td>';
-                        }
-                        $str = $str . '</tr>';
-                    }
-                    $str = $str . '</table>';
-                    $fields['title'] = $orders['user']['nom'];
-                    $fields['field_produit'] = $data['nid'];
-                    $fields['field_text'] = $orders['user']['phone'];
-                    $fields['body'] = $str;
-                    $cart = \Drupal::service('crud')->save('node', 'demande', $fields);
-                    if (is_object($cart)) {
-                        $status[] = true;
-                    } else {
-                        $status[] = false;
-                    }
-
-                }
-            }
-        }
-        if (!empty($status) && !in_array(false, $status)) {
-            $results = ['status' => 1];
-        } else {
-            $results = ['status' => 0];
-        }
-        return new JsonResponse($results);
-    }
-
-    public function apiCategory()
-    {
-        $service = \Drupal::service('drupal.helper');
-        $parents = $service->helper->taxonomy_first_level_by_vid('catalogue');
-        $categories = [];
-
-        foreach ($parents as $parent) {
-
-            $term = \Drupal::service('entity_parser.manager')->parser($parent['object']);
-            $category = $parent['tid'];
-            $child = $service->helper->taxonomy_get_children($parent['tid']);
-            foreach ($child as $item) {
-                $category = $category . "," . $item;
-            }
-            $categories[] = [
-                "value" => $category,
-                "label" => $parent['name'],
-                "image" => ($term['image'])?$term['image']['image']['url']:''
-            ];
-
-        }
-        return $this->responseCacheableJson($categories);
-    }
     protected function responseCacheableJson($data) {
         // Add Cache settings for Max-age and URL context.
         // You can use any of Drupal's contexts, tags, and time.
@@ -408,44 +207,9 @@ class JsonContentController extends ControllerBase implements ContainerInjection
         $response->addCacheableDependency(CacheableMetadata::createFromRenderArray($build));
         return $response;
     }
-    public function apiOrderV1()
-    {
-        //  $content = '{"user":{"name":"12222288xxx11","telephone":"qw","mail":"21","adress":{"city":"12","location":"12","provice":""}},"orders":[{"cart":{"quantity":1,"price":"900000","attributeList":{"Couleur":{"value":"vert","image":"http://47.91.115.233/sites/eroso/files/styles/220x240/public/media/14460/image/2020-06/f6_1.jpg?itok=HFgdLdjf"},"Pointure":{"value":"34"}},"product":{"title":"Chaussures à talons hauts en cuir verni","id":"19469","body":"<p>ok</p>","description":"","price":"900000","priceList":[{"name":"Details","id":"524","price":"900000","image":[]}],"images":["http://47.91.115.233/sites/eroso/files/styles/220x240/public/media/14460/image/2020-06/f6_1.jpg?itok=HFgdLdjf"],"attributes":[{"type":"Couleur","id":"329","values":[{"value":"vert","image":"http://47.91.115.233/sites/eroso/files/styles/220x240/public/media/14460/image/2020-06/f6_1.jpg?itok=HFgdLdjf"}]},{"type":"Pointure","id":"288","values":[{"value":"33"},{"value":"34"},{"value":"35"},{"value":"36"},{"value":"37"},{"value":"38"},{"value":"39"},{"value":"40"}]},{"type":"Talon","id":"285","values":[{"value":"9cm"},{"value":"10.5cm"},{"value":"12cm"}]}],"category":{"value":"Chaussures Femmes","id":"6"}},"uuid":"636xdkwjl6ekbp86sft"},"uuid":"792u75cghnpkc0e23bi"},{"cart":{"quantity":1,"price":"635000","attributeList":{},"product":{"number":0,"title":"Veste en cuir femme  avec ceinture amovible","id":"21298","body":"<p>ok</p>","description":"","price":"635000","priceList":[{"name":"Details","id":"524","price":"635000","image":[]}],"images":["http://www.e-roso.com/sites/eroso/files/styles/220x240/public/media/14460/image/2020-06/mm1.jpg?itok=S5dVnjko"],"attributes":[{"type":"Couleur","id":"329","values":[{"value":"noir","image":"http://www.e-roso.com/sites/eroso/files/styles/220x240/public/media/14460/image/2020-06/mm2.jpg?itok=ve5mGHUI"},{"value":"bleu","image":"http://www.e-roso.com/sites/eroso/files/styles/220x240/public/media/14460/image/2020-06/mm3.jpg?itok=oIjJASmB"},{"value":"rose","image":"http://www.e-roso.com/sites/eroso/files/styles/220x240/public/media/14460/image/2020-06/mm4.jpg?itok=IlaamD_s"},{"value":"vert","image":"http://www.e-roso.com/sites/eroso/files/styles/220x240/public/media/14460/image/2020-06/mm5.jpg?itok=P90aUiHs"}]},{"type":"Taille","id":"287","values":[{"value":"S"},{"value":"M"},{"value":"L"},{"value":"XL"}]}],"category":{"value":"Vêtements Femmes","id":"34"}},"uuid":"lduoqsy40wkbtdl4a4"},"uuid":"6i8q5gkm4z8kc0e23u8"},{"cart":{"quantity":1,"price":"635000","attributeList":{},"product":{"number":0,"title":"Veste en cuir femme  avec ceinture amovible","id":"28853","body":"<p>body</p>","description":"","price":"635000","priceList":[{"name":"Details","id":"524","price":"635000","image":[]}],"images":["http://www.e-roso.com/sites/eroso/files/styles/220x240/public/media/14460/image/2020-06/mm1.jpg?itok=S5dVnjko"],"attributes":[{"type":"Couleur","id":"329","values":[{"value":"noir","image":"http://www.e-roso.com/sites/eroso/files/styles/220x240/public/media/14460/image/2020-06/mm2.jpg?itok=ve5mGHUI"},{"value":"bleu","image":"http://www.e-roso.com/sites/eroso/files/styles/220x240/public/media/14460/image/2020-06/mm3.jpg?itok=oIjJASmB"},{"value":"rose","image":"http://www.e-roso.com/sites/eroso/files/styles/220x240/public/media/14460/image/2020-06/mm4.jpg?itok=IlaamD_s"},{"value":"vert","image":"http://www.e-roso.com/sites/eroso/files/styles/220x240/public/media/14460/image/2020-06/mm5.jpg?itok=P90aUiHs"}]},{"type":"Taille","id":"287","values":[{"value":"S"},{"value":"M"},{"value":"L"},{"value":"XL"}]}],"category":{"value":"Vêtements Femmes","id":"34"}},"uuid":"2kw5p6844ankbtdl7tl"},"uuid":"jummwms05mckc0e24pd"}]}';
-        $parser_node_json = \Drupal::service('order_json');
-        $method = \Drupal::request()->getMethod();
-        $status = [];
-        if ($method == "POST") {
-            $content = \Drupal::request()->getContent();
-
-            if (!empty($content)) {
-                $orders = json_decode($content, TRUE);
-                // 2nd param to get as array
-                $status = $parser_node_json->processOrder($orders);
-            }
-        }
-        if ($status) {
-            $results = ['status' => 1];
-        } else {
-            $results = ['status' => 0];
-        }
-        return new JsonResponse($results);
-    }
-
-    /*** /api/v1/json?url=node/1231  **/
-    public function apiJson($entity_type, $id)
-    {
-
-        $url = Xss::filter(\Drupal::request()->get('url'));
-        $options['#hook_class'] = "\Drupal\simple_json_api\Custom";
-        $fields = ["nid", "field_catalogue",
-            "title", "medias", "body", "field_sku",
-            "field_autre_prix", "field_pr"];
-        $json = \Drupal::service('entity_parser.manager')
-            ->loader_entity_by_type($id, $entity_type, $fields, $options);
 
 
-        return $this->responseCacheableJson($json);
-    }
+
 
     public function userEdit()
     {
@@ -580,6 +344,22 @@ class JsonContentController extends ControllerBase implements ContainerInjection
 
         return new JsonResponse($json);
     }
+  
+    
+    public function apiMenu()
+    {
+        $menu = \Drupal::service('simplify_menu.menu_items')->getMenuTree();
+        return $this->responseCacheableJson($menu['menu_tree']);
+    }
+
+    public function apiMenuChildren($name)
+    {
+
+        // $menu = \Drupal::service('simplify_menu.menu_items')->getMenuTree();
+        //  return new JsonResponse($menu['menu_tree']);
+
+
+    }
     public function sendResetEmail() {
         $method = \Drupal::request()->getMethod();
         $json['status'] = false;
@@ -633,38 +413,6 @@ class JsonContentController extends ControllerBase implements ContainerInjection
       ], 500);
     }
     
-    public function apiMenu()
-    {
-        $menu = \Drupal::service('simplify_menu.menu_items')->getMenuTree();
-        return $this->responseCacheableJson($menu['menu_tree']);
-    }
-
-    public function apiMenuChildren($name)
-    {
-
-        // $menu = \Drupal::service('simplify_menu.menu_items')->getMenuTree();
-        //  return new JsonResponse($menu['menu_tree']);
-
-
-    }
-
-    public function apiRender()
-    {
-        $url = Xss::filter(\Drupal::request()->get('url'));
-        $url_array = explode("/", $url);
-        if (is_array($url_array) && sizeof($url_array) == 2) {
-            $id = end($url_array);
-            $entity_type = reset($url_array);
-            $entity_type_manager = \Drupal::entityTypeManager();
-            $entity = $entity_type_manager->getStorage($entity_type)->load($id);
-            $view_builder = $entity_type_manager->getViewBuilder($entity_type);
-            $result = $view_builder->view($entity, 'default');
-            $json['content'] = \Drupal::service('renderer')->renderRoot($result);
-            $json['id'] = $id;
-        }
-        return $this->responseCacheableJson($json);
-    }
-
 
     /**
      * Custom access funciton
@@ -679,7 +427,7 @@ class JsonContentController extends ControllerBase implements ContainerInjection
     public function apiListJsonV2($entitype, $bundle)
     {
 
-        $jsons =  \Drupal::service('mz_mobile_page.api')->listQueryExecute($entitype,$bundle);
+        $jsons =  \Drupal::service('simple_json_api.manager')->listQueryExecute($entitype,$bundle);
         $results = [];
         $options = [];
         $json = $jsons["rows"];
