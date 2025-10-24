@@ -15,6 +15,7 @@ use Drupal\user\Entity\User;
 use Drupal\Core\Cache\CacheableJsonResponse;
 use Drupal\Core\Cache\CacheableMetadata;
 
+
 /**
  * Class CcmsContentController.
  *
@@ -423,7 +424,39 @@ class JsonContentController extends ControllerBase implements ContainerInjection
     {
         return AccessResult::allowed();
     }
+    
+    public function apiUserList(){
 
+            // Load all active users (exclude anonymous with uid 0)
+            $page = 2;
+            $limit = 10;
+            $offset = ($page - 1) * $limit;
+
+
+            $query = \Drupal::entityTypeManager()
+            ->getStorage('user')
+            ->getQuery()
+            ->condition('status', 1) // Only active users
+            ->condition('uid', 0, '<>'); // Exclude anonymous
+            $query->range($offset, $limit);
+            
+            foreach ($filters as $field => $value) {
+                $query->condition($field,"%".$value."%",'LIKE');
+                $query->condition($field,$value."%",'LIKE');
+                $query->condition($field,"%".$value,'LIKE');
+            }
+            $query->execute();
+
+            $users = \Drupal::entityTypeManager()->getStorage('user')->loadMultiple($uids);
+
+            foreach ($users as $user) {
+                $results[] = \Drupal::service('entity_parser.manager')->user_parser($user->id());
+            }
+
+            $ouput = ["rows" => $results , "total" =>  sizeof($results)];
+            return new JsonResponse( $ouput);
+
+    }
     public function apiListJsonV2($entitype, $bundle)
     {
 

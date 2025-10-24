@@ -76,3 +76,11 @@ simple_json_api.details.apiDetailsJsonV2:
     _controller: '\Drupal\simple_json_api\Controller\JsonContentController::apiDetailsJsonV2'
   requirements:
     _custom_access: '\Drupal\simple_json_api\Controller\JsonContentController::apiJsonAccess'
+
+simple_json_api.users:
+  path: '/api/v2/users'
+  defaults:
+    _langcode: 'en'
+    _controller: '\Drupal\simple_json_api\Controller\JsonContentController::apiUserList'
+  requirements:
+    _custom_access: '\Drupal\simple_json_api\Controller\JsonContentController::apiJsonAccess'
