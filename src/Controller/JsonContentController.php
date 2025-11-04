@@ -460,6 +460,10 @@ class JsonContentController extends ControllerBase implements ContainerInjection
     public function apiListJsonV2($entitype, $bundle)
     {
 
+        $fields = \Drupal::request()->get('fields');
+        $changes = \Drupal::request()->get('changes'); // change name field ouput
+        $values = \Drupal::request()->get('values'); // change name field ouput
+   
         $jsons =  \Drupal::service('simple_json_api.manager')->listQueryExecute($entitype,$bundle);
         $results = [];
         $options = [];
