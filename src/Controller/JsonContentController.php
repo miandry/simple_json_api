@@ -503,6 +503,24 @@ class JsonContentController extends ControllerBase implements ContainerInjection
        // return $this->responseCacheableJson($results);     
     }
 
+    private function getValueArray($item,$key_field ){
+        $values = \Drupal::request()->get('values'); 
+        $output = [];
+        foreach ($item as $field => $value) {
+            if(isset($values[$field])){
+                foreach ($item[$field] as $field_child => $value_child) {
+                    if(in_array($field_child,$values[$field])){
+                        $output[$field_child] = $value_child ;
+                    }
+                 
+
+                }
+            }
+        }
+        return  $output;
+    }
+
+
 
     public function apiDetailsJsonV2($entitype, $bundle, $id){
         $fields = \Drupal::request()->get('fields');
