@@ -508,12 +508,22 @@ class JsonContentController extends ControllerBase implements ContainerInjection
         $output = [];
         foreach ($item as $field => $value) {
             if(isset($values[$field])){
-                foreach ($item[$field] as $field_child => $value_child) {
-                    if(in_array($field_child,$values[$field])){
-                        $output[$field_child] = $value_child ;
+                if(isset($item[$field]["#object"])){
+                    $entity_ref = $item[$field]["#object"] ;
+                    $entity_array = \Drupal::service('entity_parser.manager')->parser($entity_ref);
+                    foreach ($entity_array as $field_child => $value_child) {
+                        if(in_array($field_child,$values[$field])){
+                            $output[$field_child] = $value_child ;
+                        }
                     }
-                 
+                }else{
+                    foreach ($item[$field] as $field_child => $value_child) {
+                        if(in_array($field_child,$values[$field])){
+                            $output[$field_child] = $value_child ;
+                        }
+                    
 
+                    }
                 }
             }
         }
